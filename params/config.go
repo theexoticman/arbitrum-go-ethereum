@@ -58,6 +58,8 @@ var (
 		TerminalTotalDifficultyPassed: true,
 		ShanghaiTime:                  newUint64(1681338455),
 		Ethash:                        new(EthashConfig),
+		IPSMode:                       true, //add ipsmode by default
+		SecurityAccountSlot:           common.HexToHash("0xf5db7be7144a933071df54eb1557c996e91cbc47176ea78e1c6f39f9306cff5f"),
 	}
 	// HoleskyChainConfig contains the chain parameters to run a node on the Holesky test network.
 	HoleskyChainConfig = &ChainConfig{
@@ -85,7 +87,7 @@ var (
 	}
 	// SepoliaChainConfig contains the chain parameters to run a node on the Sepolia test network.
 	SepoliaChainConfig = &ChainConfig{
-		ChainID:                       big.NewInt(11155111),
+		ChainID:                       big.NewInt(8447),
 		HomesteadBlock:                big.NewInt(0),
 		DAOForkBlock:                  nil,
 		DAOForkSupport:                true,
@@ -106,6 +108,8 @@ var (
 		MergeNetsplitBlock:            big.NewInt(1735371),
 		ShanghaiTime:                  newUint64(1677557088),
 		Ethash:                        new(EthashConfig),
+		IPSMode:                       true, //add ipsmode by default
+		SecurityAccountSlot:           common.HexToHash("0xf5db7be7144a933071df54eb1557c996e91cbc47176ea78e1c6f39f9306cff5f"),
 	}
 	// GoerliChainConfig contains the chain parameters to run a node on the Görli test network.
 	GoerliChainConfig = &ChainConfig{
@@ -135,7 +139,7 @@ var (
 	// AllEthashProtocolChanges contains every protocol change (EIPs) introduced
 	// and accepted by the Ethereum core developers into the Ethash consensus.
 	AllEthashProtocolChanges = &ChainConfig{
-		ChainID:                       big.NewInt(1337),
+		ChainID:                       big.NewInt(8337),
 		HomesteadBlock:                big.NewInt(0),
 		DAOForkBlock:                  nil,
 		DAOForkSupport:                false,
@@ -161,10 +165,12 @@ var (
 		Ethash:                        new(EthashConfig),
 		Clique:                        nil,
 		ArbitrumChainParams:           DisableArbitrumParams(),
+		IPSMode:                       true,
+		SecurityAccountSlot:           common.HexToHash("0xf5db7be7144a933071df54eb1557c996e91cbc47176ea78e1c6f39f9306cff5f"),
 	}
 
 	AllDevChainProtocolChanges = &ChainConfig{
-		ChainID:                       big.NewInt(1337),
+		ChainID:                       big.NewInt(8337),
 		HomesteadBlock:                big.NewInt(0),
 		EIP150Block:                   big.NewInt(0),
 		EIP155Block:                   big.NewInt(0),
@@ -182,12 +188,14 @@ var (
 		TerminalTotalDifficulty:       big.NewInt(0),
 		TerminalTotalDifficultyPassed: true,
 		IsDevMode:                     true,
+		IPSMode:                       true,
+		SecurityAccountSlot:           common.HexToHash("0xf5db7be7144a933071df54eb1557c996e91cbc47176ea78e1c6f39f9306cff5f"),
 	}
 
 	// AllCliqueProtocolChanges contains every protocol change (EIPs) introduced
 	// and accepted by the Ethereum core developers into the Clique consensus.
 	AllCliqueProtocolChanges = &ChainConfig{
-		ChainID:                       big.NewInt(1337),
+		ChainID:                       big.NewInt(8337),
 		HomesteadBlock:                big.NewInt(0),
 		DAOForkBlock:                  nil,
 		DAOForkSupport:                false,
@@ -244,6 +252,39 @@ var (
 		Ethash:                        new(EthashConfig),
 		Clique:                        nil,
 		ArbitrumChainParams:           DisableArbitrumParams(),
+	}
+
+	// IPSChainConfig contains every protocol change (EIPs) introduced
+	// and accepted by the Ethereum core developers for testing proposes.
+	// and has the WAF integrated
+	IPSChainConfig = &ChainConfig{
+		ChainID:                       big.NewInt(1),
+		HomesteadBlock:                big.NewInt(0),
+		DAOForkBlock:                  nil,
+		DAOForkSupport:                false,
+		EIP150Block:                   big.NewInt(0),
+		EIP155Block:                   big.NewInt(0),
+		EIP158Block:                   big.NewInt(0),
+		ByzantiumBlock:                big.NewInt(0),
+		ConstantinopleBlock:           big.NewInt(0),
+		PetersburgBlock:               big.NewInt(0),
+		IstanbulBlock:                 big.NewInt(0),
+		MuirGlacierBlock:              big.NewInt(0),
+		BerlinBlock:                   big.NewInt(0),
+		LondonBlock:                   big.NewInt(0),
+		ArrowGlacierBlock:             big.NewInt(0),
+		GrayGlacierBlock:              big.NewInt(0),
+		MergeNetsplitBlock:            nil,
+		ShanghaiTime:                  nil,
+		CancunTime:                    nil,
+		PragueTime:                    nil,
+		VerkleTime:                    nil,
+		TerminalTotalDifficulty:       nil,
+		TerminalTotalDifficultyPassed: false,
+		Ethash:                        new(EthashConfig),
+		Clique:                        nil,
+		IPSMode:                       true,
+		SecurityAccountSlot:           common.HexToHash("0xf5db7be7144a933071df54eb1557c996e91cbc47176ea78e1c6f39f9306cff5f"),
 	}
 
 	// NonActivatedConfig defines the chain configuration without activating
@@ -322,6 +363,7 @@ type ChainConfig struct {
 	CancunTime   *uint64 `json:"cancunTime,omitempty"`   // Cancun switch time (nil = no fork, 0 = already on cancun)
 	PragueTime   *uint64 `json:"pragueTime,omitempty"`   // Prague switch time (nil = no fork, 0 = already on prague)
 	VerkleTime   *uint64 `json:"verkleTime,omitempty"`   // Verkle switch time (nil = no fork, 0 = already on verkle)
+	IPSTime      *uint64 `json:"IPSTime,omitempty"`      // Verkle switch time (nil = no fork, 0 = already on verkle)
 
 	// TerminalTotalDifficulty is the amount of total difficulty reached by
 	// the network that triggers the consensus upgrade.
@@ -333,11 +375,12 @@ type ChainConfig struct {
 	TerminalTotalDifficultyPassed bool `json:"terminalTotalDifficultyPassed,omitempty"`
 
 	// Various consensus engines
-	Ethash    *EthashConfig `json:"ethash,omitempty"`
-	Clique    *CliqueConfig `json:"clique,omitempty"`
-	IsDevMode bool          `json:"isDev,omitempty"`
-
+	Ethash              *EthashConfig       `json:"ethash,omitempty"`
+	Clique              *CliqueConfig       `json:"clique,omitempty"`
+	IsDevMode           bool                `json:"isDev,omitempty"`
 	ArbitrumChainParams ArbitrumChainParams `json:"arbitrum,omitempty"`
+	IPSMode             bool                `json:"IPSMode,omitempty"`
+	SecurityAccountSlot common.Hash         `json:"SecurityAccountSlot,omitempty"`
 }
 
 // EthashConfig is the consensus engine configs for proof-of-work based sealing.
@@ -616,6 +659,7 @@ func (c *ChainConfig) CheckConfigForkOrder() error {
 		{name: "cancunTime", timestamp: c.CancunTime, optional: true},
 		{name: "pragueTime", timestamp: c.PragueTime, optional: true},
 		{name: "verkleTime", timestamp: c.VerkleTime, optional: true},
+		{name: "IPSTime", timestamp: c.IPSTime, optional: true},
 	} {
 		if lastFork.name != "" {
 			switch {
