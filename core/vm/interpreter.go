@@ -25,10 +25,11 @@ import (
 
 // Config are the configuration options for the Interpreter
 type Config struct {
-	Tracer                  EVMLogger // Opcode logger
-	NoBaseFee               bool      // Forces the EIP-1559 baseFee to 0 (needed for 0 price calls)
-	EnablePreimageRecording bool      // Enables recording of SHA3/keccak preimages
-	ExtraEips               []int     // Additional EIPS that are to be enabled
+	DynamicTracer           DynamicTracer // dynamic tracer
+	Tracer                  EVMLogger     // Opcode logger
+	NoBaseFee               bool          // Forces the EIP-1559 baseFee to 0 (needed for 0 price calls)
+	EnablePreimageRecording bool          // Enables recording of SHA3/keccak preimages
+	ExtraEips               []int         // Additional EIPS that are to be enabled
 }
 
 // ScopeContext contains the things that are per-call, such as stack and memory,
@@ -104,7 +105,7 @@ func NewEVMInterpreter(evm *EVM) *EVMInterpreter {
 // It's important to note that any errors returned by the interpreter should be
 // considered a revert-and-consume-all-gas operation except for
 // ErrExecutionReverted which means revert-and-keep-gas-left.
-func (in *EVMInterpreter) Run(contract *Contract, input []byte, readOnly bool) (ret []byte, err error) {
+func (in *EVMInterpreter) Run(contract *Contract, input []byte, readOnly bool, activateSnapshotting bool) (ret []byte, err error) {
 	// Increment the call depth which is restricted to 1024
 	in.evm.depth++
 	in.evm.ProcessingHook.PushCaller(contract.Caller())
@@ -142,11 +143,12 @@ func (in *EVMInterpreter) Run(contract *Contract, input []byte, readOnly bool) (
 		pc   = uint64(0) // program counter
 		cost uint64
 		// copies used by tracer
-		pcCopy  uint64 // needed for the deferred EVMLogger
-		gasCopy uint64 // for EVMLogger to log gas remaining before execution
-		logged  bool   // deferred EVMLogger should ignore already logged steps
-		res     []byte // result of the opcode execution function
-		debug   = in.evm.Config.Tracer != nil
+		pcCopy         uint64 // needed for the deferred EVMLogger
+		gasCopy        uint64 // for EVMLogger to log gas remaining before execution
+		logged         bool   // deferred EVMLogger should ignore already logged steps
+		res            []byte // result of the opcode execution function
+		debug          = in.evm.Config.Tracer != nil
+		dynamicTracing = in.evm.Config.DynamicTracer != nil
 	)
 	// Don't move this deferred function, it's placed before the capturestate-deferred method,
 	// so that it get's executed _after_: the capturestate needs the stacks before
@@ -167,12 +169,30 @@ func (in *EVMInterpreter) Run(contract *Contract, input []byte, readOnly bool) (
 			}
 		}()
 	}
+	if dynamicTracing {
+		// same logic as for tracer
+		defer func() {
+			if err != nil {
+				if !logged {
+					in.evm.Config.DynamicTracer.CaptureState(pcCopy, op, gasCopy, cost, callContext, in.returnData, in.evm.depth, err)
+				} else {
+					in.evm.Config.DynamicTracer.CaptureFault(pcCopy, op, gasCopy, cost, callContext, in.evm.depth, err)
+				}
+			}
+		}()
+	}
 	// The Interpreter main run loop (contextual). This loop runs until either an
 	// explicit STOP, RETURN or SELFDESTRUCT is executed, an error occurred during
 	// the execution of one of the operations or until the done flag is set by the
 	// parent context.
+	nbOp := 0
 	for {
+		nbOp += 1
 		if debug {
+			// Capture pre-execution values for tracing.
+			logged, pcCopy, gasCopy = false, pc, contract.Gas
+		}
+		if dynamicTracing {
 			// Capture pre-execution values for tracing.
 			logged, pcCopy, gasCopy = false, pc, contract.Gas
 		}
@@ -181,6 +201,9 @@ func (in *EVMInterpreter) Run(contract *Contract, input []byte, readOnly bool) (
 		op = contract.GetOp(pc)
 		operation := in.table[op]
 		cost = operation.constantGas // For tracing
+
+		// fmt.Printf("operation number: %d, Opcode: %s, Func: %p\n", nbOp, op.String(), operation.execute)
+
 		// Validate stack
 		if sLen := stack.len(); sLen < operation.minStack {
 			return nil, &ErrStackUnderflow{stackLen: sLen, required: operation.minStack}
@@ -221,15 +244,22 @@ func (in *EVMInterpreter) Run(contract *Contract, input []byte, readOnly bool) (
 				in.evm.Config.Tracer.CaptureState(pc, op, gasCopy, cost, callContext, in.returnData, in.evm.depth, err)
 				logged = true
 			}
+			if dynamicTracing {
+				in.evm.Config.DynamicTracer.CaptureState(pc, op, gasCopy, cost, callContext, in.returnData, in.evm.depth, err)
+				logged = true
+			}
 			if memorySize > 0 {
 				mem.Resize(memorySize)
 			}
 		} else if debug {
 			in.evm.Config.Tracer.CaptureState(pc, op, gasCopy, cost, callContext, in.returnData, in.evm.depth, err)
 			logged = true
+		} else if dynamicTracing {
+			in.evm.Config.DynamicTracer.CaptureState(pc, op, gasCopy, cost, callContext, in.returnData, in.evm.depth, err)
+			logged = true
 		}
 		// execute the operation
-		res, err = operation.execute(&pc, in, callContext)
+		res, err = operation.execute(&pc, in, callContext, activateSnapshotting)
 		if err != nil {
 			break
 		}

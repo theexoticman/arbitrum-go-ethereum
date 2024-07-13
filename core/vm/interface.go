@@ -20,6 +20,7 @@ import (
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/state"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/params"
 )
@@ -82,6 +83,12 @@ type StateDB interface {
 	AddPreimage(common.Hash, []byte)
 
 	GetCurrentTxLogs() []*types.Log
+
+	// For tracers
+	GetDirtyObjects() map[common.Address]struct{}
+	GetObjects() map[common.Address]*state.StateObject
+	GetStateObject(common.Address) *state.StateObject
+	SetStateObject(object *state.StateObject)
 }
 
 // CallContext provides a basic interface for the EVM calling conventions. The EVM
