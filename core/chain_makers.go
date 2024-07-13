@@ -37,11 +37,12 @@ import (
 // BlockGen creates blocks for testing.
 // See GenerateChain for a detailed explanation.
 type BlockGen struct {
-	i       int
-	parent  *types.Block
-	chain   []*types.Block
-	header  *types.Header
-	statedb *state.StateDB
+	i                  int
+	parent             *types.Block
+	chain              []*types.Block
+	header             *types.Header
+	statedb            *state.StateDB
+	contractSnapshotDB *state.StateDB
 
 	gasPool     *GasPool
 	txs         []*types.Transaction
@@ -88,6 +89,11 @@ func (b *BlockGen) SetPoS() {
 	b.header.Difficulty = new(big.Int)
 }
 
+// SetBlobGas sets the data gas used by the blob in the generated block.
+func (b *BlockGen) SetBlobGas(blobGasUsed uint64) {
+	b.header.BlobGasUsed = &blobGasUsed
+}
+
 // addTx adds a transaction to the generated block. If no coinbase has
 // been set, the block's coinbase is set to the zero address.
 //
@@ -100,15 +106,12 @@ func (b *BlockGen) addTx(bc *BlockChain, vmConfig vm.Config, tx *types.Transacti
 		b.SetCoinbase(common.Address{})
 	}
 	b.statedb.SetTxContext(tx.Hash(), len(b.txs))
-	receipt, _, err := ApplyTransaction(b.config, bc, &b.header.Coinbase, b.gasPool, b.statedb, b.header, tx, &b.header.GasUsed, vmConfig)
+	receipt, _, err := ApplyTransaction(b.config, bc, &b.header.Coinbase, b.gasPool, b.statedb, b.contractSnapshotDB, b.header, tx, &b.header.GasUsed, vmConfig)
 	if err != nil {
 		panic(err)
 	}
 	b.txs = append(b.txs, tx)
 	b.receipts = append(b.receipts, receipt)
-	if b.header.BlobGasUsed != nil {
-		*b.header.BlobGasUsed += receipt.BlobGasUsed
-	}
 }
 
 // AddTx adds a transaction to the generated block. If no coinbase has
@@ -398,6 +401,7 @@ func makeHeader(chain consensus.ChainReader, parent *types.Block, state *state.S
 		}
 	}
 	prevArbosVersion := types.DeserializeHeaderExtraInformation(parent.Header()).ArbOSFormatVersion
+
 	if chain.Config().IsCancun(header.Number, header.Time, prevArbosVersion) {
 		var (
 			parentExcessBlobGas uint64

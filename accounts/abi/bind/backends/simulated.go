@@ -63,10 +63,11 @@ type SimulatedBackend struct {
 	database   ethdb.Database   // In memory database to store our testing data
 	blockchain *core.BlockChain // Ethereum blockchain to handle the consensus
 
-	mu              sync.Mutex
-	pendingBlock    *types.Block   // Currently pending block that will be imported on request
-	pendingState    *state.StateDB // Currently pending state that will be the active on request
-	pendingReceipts types.Receipts // Currently receipts for the pending block
+	mu                      sync.Mutex
+	pendingBlock            *types.Block   // Currently pending block that will be imported on request
+	pendingState            *state.StateDB // Currently pending state that will be the active on request
+	pendingReceipts         types.Receipts // Currently receipts for the pending block
+	pendingContractSnapshot *state.StateDB // Currently pending state that will be the active on request
 
 	events       *filters.EventSystem  // for filtering log events live
 	filterSystem *filters.FilterSystem // for filtering database logs
@@ -194,7 +195,6 @@ func (b *SimulatedBackend) stateByBlockNumber(ctx context.Context, blockNumber *
 func (b *SimulatedBackend) CodeAt(ctx context.Context, contract common.Address, blockNumber *big.Int) ([]byte, error) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
-
 	stateDB, err := b.stateByBlockNumber(ctx, blockNumber)
 	if err != nil {
 		return nil, err
@@ -437,10 +437,12 @@ func (b *SimulatedBackend) CallContract(ctx context.Context, call ethereum.CallM
 		return nil, errBlockNumberUnsupported
 	}
 	stateDB, err := b.blockchain.State()
+	contractSnapshotsDB, _ := state.New(types.ContractSnapshotRoot, state.NewDatabase(rawdb.NewMemoryDatabase()), nil)
+
 	if err != nil {
 		return nil, err
 	}
-	res, err := b.callContract(ctx, call, b.blockchain.CurrentBlock(), stateDB)
+	res, err := b.callContract(ctx, call, b.blockchain.CurrentBlock(), stateDB, contractSnapshotsDB)
 	if err != nil {
 		return nil, err
 	}
@@ -457,7 +459,7 @@ func (b *SimulatedBackend) PendingCallContract(ctx context.Context, call ethereu
 	defer b.mu.Unlock()
 	defer b.pendingState.RevertToSnapshot(b.pendingState.Snapshot())
 
-	res, err := b.callContract(ctx, call, b.pendingBlock.Header(), b.pendingState)
+	res, err := b.callContract(ctx, call, b.pendingBlock.Header(), b.pendingState, b.pendingContractSnapshot)
 	if err != nil {
 		return nil, err
 	}
@@ -551,7 +553,7 @@ func (b *SimulatedBackend) EstimateGas(ctx context.Context, call ethereum.CallMs
 		call.Gas = gas
 
 		snapshot := b.pendingState.Snapshot()
-		res, err := b.callContract(ctx, call, b.pendingBlock.Header(), b.pendingState)
+		res, err := b.callContract(ctx, call, b.pendingBlock.Header(), b.pendingState, b.pendingContractSnapshot)
 		b.pendingState.RevertToSnapshot(snapshot)
 
 		if err != nil {
@@ -601,7 +603,7 @@ func (b *SimulatedBackend) EstimateGas(ctx context.Context, call ethereum.CallMs
 
 // callContract implements common code between normal and pending contract calls.
 // state is modified during execution, make sure to copy it if necessary.
-func (b *SimulatedBackend) callContract(ctx context.Context, call ethereum.CallMsg, header *types.Header, stateDB *state.StateDB) (*core.ExecutionResult, error) {
+func (b *SimulatedBackend) callContract(ctx context.Context, call ethereum.CallMsg, header *types.Header, stateDB *state.StateDB, contractSnapshotDB *state.StateDB) (*core.ExecutionResult, error) {
 	// Gas prices post 1559 need to be initialized
 	if call.GasPrice != nil && (call.GasFeeCap != nil || call.GasTipCap != nil) {
 		return nil, errors.New("both gasPrice and (maxFeePerGas or maxPriorityFeePerGas) specified")
