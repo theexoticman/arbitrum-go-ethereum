@@ -28,6 +28,7 @@ var (
 	ErrDepth                    = errors.New("max call depth exceeded")
 	ErrInsufficientBalance      = errors.New("insufficient balance for transfer")
 	ErrContractAddressCollision = errors.New("contract address collision")
+	ErrSnapshotAddressCollision = errors.New("snpahost address collision") // used only in ips
 	ErrExecutionReverted        = errors.New("execution reverted")
 	ErrMaxInitCodeSizeExceeded  = errors.New("max initcode size exceeded")
 	ErrMaxCodeSizeExceeded      = errors.New("max code size exceeded")
@@ -37,7 +38,10 @@ var (
 	ErrGasUintOverflow          = errors.New("gas uint64 overflow")
 	ErrInvalidCode              = errors.New("invalid code: must not begin with 0xef")
 	ErrNonceUintOverflow        = errors.New("nonce uint64 overflow")
-
+	// ErrSecurityFirewallRevert is returned if the transaction does not comply
+	// with the security conditions of one of the smart contracts
+	ErrSecurityFirewallRevert = errors.New("decentralized firewall reverted transaction")
+	ErrSendingGasToSnapshot   = errors.New("sending gas tokens to a temporary snapshot contract")
 	// errStopToken is an internal token indicating interpreter loop termination,
 	// never returned to outside callers.
 	errStopToken = errors.New("stop token")
