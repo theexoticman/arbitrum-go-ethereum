@@ -72,11 +72,16 @@ func (j *journal) revert(statedb *StateDB, snapshot int) {
 	j.entries = j.entries[:snapshot]
 }
 
+func (j *journal) Dirty(addr common.Address) {
+	j.dirty(addr)
+}
+
 // dirty explicitly sets an address to dirty, even if the change entries would
 // otherwise suggest it as clean. This method is an ugly hack to handle the RIPEMD
 // precompile consensus exception.
 func (j *journal) dirty(addr common.Address) {
 	j.dirties[addr]++
+
 }
 
 // length returns the current number of entries in the journal.
@@ -90,7 +95,8 @@ type (
 		account *common.Address
 	}
 	resetObjectChange struct {
-		prev         *stateObject
+		account      *common.Address
+		prev         *StateObject
 		prevdestruct bool
 		prevAccount  []byte
 		prevStorage  map[common.Hash][]byte
@@ -180,13 +186,7 @@ func (ch resetObjectChange) revert(s *StateDB) {
 }
 
 func (ch resetObjectChange) dirtied() *common.Address {
-	// Arbitrum: We keep the behavior that existed before go-ethereum v1.12.1 and return nil,
-	// instead of returning the reset address as upstream go-ethereum v1.12.1 does.
-	// That's because, unlike for go-ethereum, whether this account is dirty or not is relevant for Arbitrum.
-	// Arbitrum hooks manipulate the state in some ways that go-ethereum doesn't which cause that relevance,
-	// e.g. subtracting balance from an account that hasn't been otherwise touched.
-	// See https://github.com/OffchainLabs/nitro/pull/1976 for details
-	return nil
+	return ch.account
 }
 
 func (ch selfDestructChange) revert(s *StateDB) {
