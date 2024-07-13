@@ -17,8 +17,6 @@
 package vm
 
 import (
-	"fmt"
-
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -27,7 +25,6 @@ import (
 )
 
 func opAdd(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activateSnapshotting bool) ([]byte, error) {
-	fmt.Println("opAdd - called")
 
 	x, y := scope.Stack.pop(), scope.Stack.peek()
 	y.Add(&x, y)
@@ -35,7 +32,6 @@ func opAdd(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activat
 }
 
 func opSub(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activateSnapshotting bool) ([]byte, error) {
-	fmt.Println("opSub - called")
 
 	x, y := scope.Stack.pop(), scope.Stack.peek()
 	y.Sub(&x, y)
@@ -43,7 +39,6 @@ func opSub(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activat
 }
 
 func opMul(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activateSnapshotting bool) ([]byte, error) {
-	fmt.Println("opMul - called")
 
 	x, y := scope.Stack.pop(), scope.Stack.peek()
 	y.Mul(&x, y)
@@ -51,7 +46,6 @@ func opMul(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activat
 }
 
 func opDiv(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activateSnapshotting bool) ([]byte, error) {
-	fmt.Println("opDiv - called")
 
 	x, y := scope.Stack.pop(), scope.Stack.peek()
 	y.Div(&x, y)
@@ -59,7 +53,6 @@ func opDiv(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activat
 }
 
 func opSdiv(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activateSnapshotting bool) ([]byte, error) {
-	fmt.Println("opSdiv - called")
 
 	x, y := scope.Stack.pop(), scope.Stack.peek()
 	y.SDiv(&x, y)
@@ -67,7 +60,6 @@ func opSdiv(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activa
 }
 
 func opMod(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activateSnapshotting bool) ([]byte, error) {
-	fmt.Println("opMod - called")
 
 	x, y := scope.Stack.pop(), scope.Stack.peek()
 	y.Mod(&x, y)
@@ -75,7 +67,6 @@ func opMod(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activat
 }
 
 func opSmod(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activateSnapshotting bool) ([]byte, error) {
-	fmt.Println("opSmod - called")
 
 	x, y := scope.Stack.pop(), scope.Stack.peek()
 	y.SMod(&x, y)
@@ -83,7 +74,6 @@ func opSmod(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activa
 }
 
 func opExp(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activateSnapshotting bool) ([]byte, error) {
-	fmt.Println("opExp - called")
 
 	base, exponent := scope.Stack.pop(), scope.Stack.peek()
 	exponent.Exp(&base, exponent)
@@ -91,7 +81,6 @@ func opExp(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activat
 }
 
 func opSignExtend(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activateSnapshotting bool) ([]byte, error) {
-	fmt.Println("opSignExtend - called")
 
 	back, num := scope.Stack.pop(), scope.Stack.peek()
 	num.ExtendSign(num, &back)
@@ -99,7 +88,6 @@ func opSignExtend(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, 
 }
 
 func opNot(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activateSnapshotting bool) ([]byte, error) {
-	fmt.Println("opNot - called")
 
 	x := scope.Stack.peek()
 	x.Not(x)
@@ -107,7 +95,6 @@ func opNot(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activat
 }
 
 func opLt(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activateSnapshotting bool) ([]byte, error) {
-	fmt.Println("opLt - called")
 
 	x, y := scope.Stack.pop(), scope.Stack.peek()
 	if x.Lt(y) {
@@ -119,7 +106,6 @@ func opLt(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activate
 }
 
 func opGt(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activateSnapshotting bool) ([]byte, error) {
-	fmt.Println("opGt - called")
 
 	x, y := scope.Stack.pop(), scope.Stack.peek()
 	if x.Gt(y) {
@@ -131,7 +117,6 @@ func opGt(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activate
 }
 
 func opSlt(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activateSnapshotting bool) ([]byte, error) {
-	fmt.Println("opSlt - called")
 
 	x, y := scope.Stack.pop(), scope.Stack.peek()
 	if x.Slt(y) {
@@ -143,7 +128,6 @@ func opSlt(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activat
 }
 
 func opSgt(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activateSnapshotting bool) ([]byte, error) {
-	fmt.Println("opSgt - called")
 
 	x, y := scope.Stack.pop(), scope.Stack.peek()
 	if x.Sgt(y) {
@@ -155,7 +139,6 @@ func opSgt(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activat
 }
 
 func opEq(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activateSnapshotting bool) ([]byte, error) {
-	fmt.Println("opEq - called")
 
 	x, y := scope.Stack.pop(), scope.Stack.peek()
 	if x.Eq(y) {
@@ -167,7 +150,6 @@ func opEq(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activate
 }
 
 func opIszero(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activateSnapshotting bool) ([]byte, error) {
-	fmt.Println("opIszero - called")
 
 	x := scope.Stack.peek()
 	if x.IsZero() {
@@ -179,7 +161,6 @@ func opIszero(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, acti
 }
 
 func opAnd(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activateSnapshotting bool) ([]byte, error) {
-	fmt.Println("opAnd - called")
 
 	x, y := scope.Stack.pop(), scope.Stack.peek()
 	y.And(&x, y)
@@ -187,7 +168,6 @@ func opAnd(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activat
 }
 
 func opOr(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activateSnapshotting bool) ([]byte, error) {
-	fmt.Println("opOr - called")
 
 	x, y := scope.Stack.pop(), scope.Stack.peek()
 	y.Or(&x, y)
@@ -195,7 +175,6 @@ func opOr(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activate
 }
 
 func opXor(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activateSnapshotting bool) ([]byte, error) {
-	fmt.Println("opXor - called")
 
 	x, y := scope.Stack.pop(), scope.Stack.peek()
 	y.Xor(&x, y)
@@ -203,7 +182,6 @@ func opXor(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activat
 }
 
 func opByte(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activateSnapshotting bool) ([]byte, error) {
-	fmt.Println("opByte - called")
 
 	th, val := scope.Stack.pop(), scope.Stack.peek()
 	val.Byte(&th)
@@ -211,7 +189,6 @@ func opByte(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activa
 }
 
 func opAddmod(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activateSnapshotting bool) ([]byte, error) {
-	fmt.Println("opAddmod - called")
 
 	x, y, z := scope.Stack.pop(), scope.Stack.pop(), scope.Stack.peek()
 	if z.IsZero() {
@@ -223,7 +200,6 @@ func opAddmod(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, acti
 }
 
 func opMulmod(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activateSnapshotting bool) ([]byte, error) {
-	fmt.Println("opMulmod - called")
 
 	x, y, z := scope.Stack.pop(), scope.Stack.pop(), scope.Stack.peek()
 	z.MulMod(&x, &y, z)
@@ -234,7 +210,6 @@ func opMulmod(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, acti
 // The SHL instruction (shift left) pops 2 values from the stack, first arg1 and then arg2,
 // and pushes on the stack arg2 shifted to the left by arg1 number of bits.
 func opSHL(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activateSnapshotting bool) ([]byte, error) {
-	fmt.Println("opSHL - called")
 
 	// Note, second operand is left in the stack; accumulate result into it, and no need to push it afterwards
 	shift, value := scope.Stack.pop(), scope.Stack.peek()
@@ -250,7 +225,6 @@ func opSHL(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activat
 // The SHR instruction (logical shift right) pops 2 values from the stack, first arg1 and then arg2,
 // and pushes on the stack arg2 shifted to the right by arg1 number of bits with zero fill.
 func opSHR(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activateSnapshotting bool) ([]byte, error) {
-	fmt.Println("opSHR - called")
 
 	// Note, second operand is left in the stack; accumulate result into it, and no need to push it afterwards
 	shift, value := scope.Stack.pop(), scope.Stack.peek()
@@ -266,7 +240,6 @@ func opSHR(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activat
 // The SAR instruction (arithmetic shift right) pops 2 values from the stack, first arg1 and then arg2,
 // and pushes on the stack arg2 shifted to the right by arg1 number of bits with sign extension.
 func opSAR(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activateSnapshotting bool) ([]byte, error) {
-	fmt.Println("opSAR - called")
 
 	shift, value := scope.Stack.pop(), scope.Stack.peek()
 	if shift.GtUint64(256) {
@@ -284,7 +257,6 @@ func opSAR(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activat
 }
 
 func opKeccak256(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activateSnapshotting bool) ([]byte, error) {
-	fmt.Println("opKeccak256 - called")
 
 	offset, size := scope.Stack.pop(), scope.Stack.peek()
 	data := scope.Memory.GetPtr(int64(offset.Uint64()), int64(size.Uint64()))
@@ -299,9 +271,7 @@ func opKeccak256(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, a
 
 	evm := interpreter.evm
 	if evm.Config.EnablePreimageRecording {
-		fmt.Println("opKeccak256 - before")
 		evm.ExecutionDB.AddPreimage(interpreter.hasherBuf, data)
-		fmt.Println("opKeccak256 - after")
 	}
 
 	size.SetBytes(interpreter.hasherBuf[:])
@@ -309,39 +279,32 @@ func opKeccak256(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, a
 }
 
 func opAddress(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activateSnapshotting bool) ([]byte, error) {
-	fmt.Println("opAddress - called")
 
 	scope.Stack.push(new(uint256.Int).SetBytes(scope.Contract.Address().Bytes()))
 	return nil, nil
 }
 
 func opBalance(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activateSnapshotting bool) ([]byte, error) {
-	fmt.Println("opBalance - called")
 
 	slot := scope.Stack.peek()
 	address := common.Address(slot.Bytes20())
-	fmt.Println("opbalance - before")
 	slot.SetFromBig(interpreter.evm.ExecutionDB.GetBalance(address))
-	fmt.Println("opbalance - after")
 	return nil, nil
 }
 
 func opOrigin(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activateSnapshotting bool) ([]byte, error) {
-	fmt.Println("opOrigin - called")
 
 	scope.Stack.push(new(uint256.Int).SetBytes(interpreter.evm.Origin.Bytes()))
 	return nil, nil
 }
 
 func opCaller(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activateSnapshotting bool) ([]byte, error) {
-	fmt.Println("opCaller - called")
 
 	scope.Stack.push(new(uint256.Int).SetBytes(scope.Contract.Caller().Bytes()))
 	return nil, nil
 }
 
 func opCallValue(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activateSnapshotting bool) ([]byte, error) {
-	fmt.Println("opCallValue - called")
 
 	v, _ := uint256.FromBig(scope.Contract.value)
 	scope.Stack.push(v)
@@ -349,7 +312,6 @@ func opCallValue(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, a
 }
 
 func opCallDataLoad(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activateSnapshotting bool) ([]byte, error) {
-	fmt.Println("opCallDataLoad - called")
 
 	x := scope.Stack.peek()
 	if offset, overflow := x.Uint64WithOverflow(); !overflow {
@@ -362,14 +324,12 @@ func opCallDataLoad(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext
 }
 
 func opCallDataSize(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activateSnapshotting bool) ([]byte, error) {
-	fmt.Println("opCallDataSize - called")
 
 	scope.Stack.push(new(uint256.Int).SetUint64(uint64(len(scope.Contract.Input))))
 	return nil, nil
 }
 
 func opCallDataCopy(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activateSnapshotting bool) ([]byte, error) {
-	fmt.Println("opCallDataCopy - called")
 
 	var (
 		memOffset  = scope.Stack.pop()
@@ -389,14 +349,12 @@ func opCallDataCopy(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext
 }
 
 func opReturnDataSize(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activateSnapshotting bool) ([]byte, error) {
-	fmt.Println("opReturnDataSize - called")
 
 	scope.Stack.push(new(uint256.Int).SetUint64(uint64(len(interpreter.returnData))))
 	return nil, nil
 }
 
 func opReturnDataCopy(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activateSnapshotting bool) ([]byte, error) {
-	fmt.Println("opReturnDataCopy - called")
 
 	var (
 		memOffset  = scope.Stack.pop()
@@ -420,17 +378,13 @@ func opReturnDataCopy(pc *uint64, interpreter *EVMInterpreter, scope *ScopeConte
 }
 
 func opExtCodeSize(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activateSnapshotting bool) ([]byte, error) {
-	fmt.Println("opExtCodeSize - called")
 
 	slot := scope.Stack.peek()
-	fmt.Println("opExtCodeSize - before")
 	slot.SetUint64(uint64(interpreter.evm.ExecutionDB.GetCodeSize(slot.Bytes20())))
-	fmt.Println("opExtCodeSize - after")
 	return nil, nil
 }
 
 func opCodeSize(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activateSnapshotting bool) ([]byte, error) {
-	fmt.Println("opCodeSize - called")
 
 	l := new(uint256.Int)
 	l.SetUint64(uint64(len(scope.Contract.Code)))
@@ -439,7 +393,6 @@ func opCodeSize(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, ac
 }
 
 func opCodeCopy(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activateSnapshotting bool) ([]byte, error) {
-	fmt.Println("opCodeCopy - called")
 
 	var (
 		memOffset  = scope.Stack.pop()
@@ -457,7 +410,6 @@ func opCodeCopy(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, ac
 }
 
 func opExtCodeCopy(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activateSnapshotting bool) ([]byte, error) {
-	fmt.Println("opExtCodeCopy - called")
 
 	var (
 		stack      = scope.Stack
@@ -471,9 +423,7 @@ func opExtCodeCopy(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext,
 		uint64CodeOffset = 0xffffffffffffffff
 	}
 	addr := common.Address(a.Bytes20())
-	fmt.Println("opExtCodeCopy - before")
 	codeCopy := getData(interpreter.evm.ExecutionDB.GetCode(addr), uint64CodeOffset, length.Uint64())
-	fmt.Println("opExtCodeCopy - after")
 	scope.Memory.Set(memOffset.Uint64(), length.Uint64(), codeCopy)
 
 	return nil, nil
@@ -509,20 +459,17 @@ func opExtCodeHash(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext,
 
 	slot := scope.Stack.peek()
 	address := common.Address(slot.Bytes20())
-	fmt.Println("opExtCodeHash - before")
 
 	if interpreter.evm.ExecutionDB.Empty(address) {
 		slot.Clear()
 	} else {
 		slot.SetBytes(interpreter.evm.ExecutionDB.GetCodeHash(address).Bytes())
 	}
-	fmt.Println("opExtCodeHash - after")
 
 	return nil, nil
 }
 
 func opGasprice(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activateSnapshotting bool) ([]byte, error) {
-	fmt.Println("opGasprice - called")
 
 	v, _ := uint256.FromBig(interpreter.evm.GasPrice)
 	scope.Stack.push(v)
@@ -530,7 +477,6 @@ func opGasprice(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, ac
 }
 
 func opBlockhash(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activateSnapshotting bool) ([]byte, error) {
-	fmt.Println("opBlockhash - called")
 	num := scope.Stack.peek()
 	num64, overflow := num.Uint64WithOverflow()
 	if overflow {
@@ -560,19 +506,16 @@ func opBlockhash(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, a
 }
 
 func opCoinbase(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activateSnapshotting bool) ([]byte, error) {
-	fmt.Println("opCoinbase - called")
 	scope.Stack.push(new(uint256.Int).SetBytes(interpreter.evm.Context.Coinbase.Bytes()))
 	return nil, nil
 }
 
 func opTimestamp(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activateSnapshotting bool) ([]byte, error) {
-	fmt.Println("opTimestamp - called")
 	scope.Stack.push(new(uint256.Int).SetUint64(interpreter.evm.Context.Time))
 	return nil, nil
 }
 
 func opNumber(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activateSnapshotting bool) ([]byte, error) {
-	fmt.Println("opNumber - called")
 
 	v, _ := uint256.FromBig(interpreter.evm.Context.BlockNumber)
 	scope.Stack.push(v)
@@ -580,7 +523,6 @@ func opNumber(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, acti
 }
 
 func opDifficulty(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activateSnapshotting bool) ([]byte, error) {
-	fmt.Println("opDifficulty - called")
 
 	v, _ := uint256.FromBig(interpreter.evm.Context.Difficulty)
 	scope.Stack.push(v)
@@ -588,7 +530,6 @@ func opDifficulty(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, 
 }
 
 func opRandom(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activateSnapshotting bool) ([]byte, error) {
-	fmt.Println("opRandom - called")
 
 	v := new(uint256.Int).SetBytes(interpreter.evm.Context.Random.Bytes())
 	scope.Stack.push(v)
@@ -596,21 +537,18 @@ func opRandom(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, acti
 }
 
 func opGasLimit(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activateSnapshotting bool) ([]byte, error) {
-	fmt.Println("opGasLimit - called")
 
 	scope.Stack.push(new(uint256.Int).SetUint64(interpreter.evm.Context.GasLimit))
 	return nil, nil
 }
 
 func opPop(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activateSnapshotting bool) ([]byte, error) {
-	fmt.Println("opPop - called")
 
 	scope.Stack.pop()
 	return nil, nil
 }
 
 func opMload(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activateSnapshotting bool) ([]byte, error) {
-	fmt.Println("opMload - called")
 	v := scope.Stack.peek()
 	offset := int64(v.Uint64())
 	v.SetBytes(scope.Memory.GetPtr(offset, 32))
@@ -618,7 +556,6 @@ func opMload(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activ
 }
 
 func opMstore(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activateSnapshotting bool) ([]byte, error) {
-	fmt.Println("opMstore - called")
 	// pop value of the stack
 	mStart, val := scope.Stack.pop(), scope.Stack.pop()
 	scope.Memory.Set32(mStart.Uint64(), &val)
@@ -626,7 +563,6 @@ func opMstore(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, acti
 }
 
 func opMstore8(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activateSnapshotting bool) ([]byte, error) {
-	fmt.Println("opMstore8 - called")
 	off, val := scope.Stack.pop(), scope.Stack.pop()
 	scope.Memory.store[off.Uint64()] = byte(val.Uint64())
 	return nil, nil
@@ -635,31 +571,24 @@ func opMstore8(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, act
 func opSload(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activateSnapshotting bool) ([]byte, error) {
 	loc := scope.Stack.peek()
 	hash := common.Hash(loc.Bytes32())
-	fmt.Println("opSload - before")
 	val := interpreter.evm.ExecutionDB.GetState(scope.Contract.Address(), hash)
-	fmt.Println(val)
-	fmt.Println("opSload - after")
 	loc.SetBytes(val.Bytes())
 	return nil, nil
 }
 
 func opSstore(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activateSnapshotting bool) ([]byte, error) {
-	fmt.Println("opSstore - called")
 
 	if interpreter.readOnly {
 		return nil, ErrWriteProtection
 	}
 	loc := scope.Stack.pop()
 	val := scope.Stack.pop()
-	fmt.Println("opSstore - before")
 	interpreter.evm.ExecutionDB.SetState(scope.Contract.Address(), loc.Bytes32(), val.Bytes32())
-	fmt.Println("opSstore - after")
 
 	return nil, nil
 }
 
 func opJump(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activateSnapshotting bool) ([]byte, error) {
-	fmt.Println("opJump - called")
 
 	if interpreter.evm.abort.Load() {
 		return nil, errStopToken
@@ -673,7 +602,6 @@ func opJump(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activa
 }
 
 func opJumpi(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activateSnapshotting bool) ([]byte, error) {
-	fmt.Println("opJumpi - called")
 
 	if interpreter.evm.abort.Load() {
 		return nil, errStopToken
@@ -689,34 +617,29 @@ func opJumpi(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activ
 }
 
 func opJumpdest(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activateSnapshotting bool) ([]byte, error) {
-	fmt.Println("opJumpdest - called")
 
 	return nil, nil
 }
 
 func opPc(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activateSnapshotting bool) ([]byte, error) {
-	fmt.Println("opPc - called")
 
 	scope.Stack.push(new(uint256.Int).SetUint64(*pc))
 	return nil, nil
 }
 
 func opMsize(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activateSnapshotting bool) ([]byte, error) {
-	fmt.Println("opMsize - called")
 
 	scope.Stack.push(new(uint256.Int).SetUint64(uint64(scope.Memory.Len())))
 	return nil, nil
 }
 
 func opGas(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activateSnapshotting bool) ([]byte, error) {
-	fmt.Println("opGas - called")
 
 	scope.Stack.push(new(uint256.Int).SetUint64(scope.Contract.Gas))
 	return nil, nil
 }
 
 func opCreate(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activateSnapshotting bool) ([]byte, error) {
-	fmt.Println("opCreate - called")
 
 	if interpreter.readOnly {
 		return nil, ErrWriteProtection
@@ -764,7 +687,6 @@ func opCreate(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, acti
 }
 
 func opCreate2(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activateSnapshotting bool) ([]byte, error) {
-	fmt.Println("opCreate2 - called")
 
 	if interpreter.readOnly {
 		return nil, ErrWriteProtection
@@ -806,7 +728,6 @@ func opCreate2(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, act
 }
 
 func opCall(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activateSnapshotting bool) ([]byte, error) {
-	fmt.Println("opCall - called")
 	stack := scope.Stack
 	// Pop gas. The actual gas in interpreter.evm.callGasTemp.
 	// We can use this as a temporary value
@@ -848,7 +769,6 @@ func opCall(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activa
 }
 
 func opCallCode(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activateSnapshotting bool) ([]byte, error) {
-	fmt.Println("opCallCode - called")
 
 	// Pop gas. The actual gas is in interpreter.evm.callGasTemp.
 	stack := scope.Stack
@@ -885,7 +805,6 @@ func opCallCode(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, ac
 }
 
 func opDelegateCall(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activateSnapshotting bool) ([]byte, error) {
-	fmt.Println("opDelegateCall - called")
 
 	stack := scope.Stack
 	// Pop gas. The actual gas is in interpreter.evm.callGasTemp.
@@ -915,7 +834,6 @@ func opDelegateCall(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext
 }
 
 func opStaticCall(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activateSnapshotting bool) ([]byte, error) {
-	fmt.Println("opStaticCall - called")
 
 	// Pop gas. The actual gas is in interpreter.evm.callGasTemp.
 	stack := scope.Stack
@@ -945,7 +863,6 @@ func opStaticCall(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, 
 }
 
 func opReturn(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activateSnapshotting bool) ([]byte, error) {
-	fmt.Println("opReturn - called")
 
 	offset, size := scope.Stack.pop(), scope.Stack.pop()
 	ret := scope.Memory.GetPtr(int64(offset.Uint64()), int64(size.Uint64()))
@@ -954,7 +871,6 @@ func opReturn(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, acti
 }
 
 func opRevert(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activateSnapshotting bool) ([]byte, error) {
-	fmt.Println("opRevert - called")
 	offset, size := scope.Stack.pop(), scope.Stack.pop()
 	ret := scope.Memory.GetPtr(int64(offset.Uint64()), int64(size.Uint64()))
 
@@ -963,27 +879,22 @@ func opRevert(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, acti
 }
 
 func opUndefined(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activateSnapshotting bool) ([]byte, error) {
-	fmt.Println("opUndefined - called")
 	return nil, &ErrInvalidOpCode{opcode: OpCode(scope.Contract.Code[*pc])}
 }
 
 func opStop(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activateSnapshotting bool) ([]byte, error) {
-	fmt.Println("opStop - called")
 
 	return nil, errStopToken
 }
 
 func opSelfdestruct(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activateSnapshotting bool) ([]byte, error) {
-	fmt.Println("opSelfdestruct - called")
 	if interpreter.readOnly {
 		return nil, ErrWriteProtection
 	}
 	beneficiary := scope.Stack.pop()
-	fmt.Println("opSelfdestruct - before")
 	balance := interpreter.evm.ExecutionDB.GetBalance(scope.Contract.Address())
 	interpreter.evm.ExecutionDB.AddBalance(beneficiary.Bytes20(), balance)
 	interpreter.evm.ExecutionDB.SelfDestruct(scope.Contract.Address())
-	fmt.Println("opSelfdestruct - after")
 
 	if tracer := interpreter.evm.Config.Tracer; tracer != nil {
 		tracer.CaptureEnter(SELFDESTRUCT, scope.Contract.Address(), beneficiary.Bytes20(), []byte{}, 0, balance)
@@ -997,7 +908,6 @@ func opSelfdestruct(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext
 }
 
 func opSelfdestruct6780(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activateSnapshotting bool) ([]byte, error) {
-	fmt.Println("opSelfdestruct6780 - called")
 
 	if interpreter.readOnly {
 		return nil, ErrWriteProtection
@@ -1035,7 +945,6 @@ func makeLog(size int) executionFunc {
 		}
 
 		d := scope.Memory.GetCopy(int64(mStart.Uint64()), int64(mSize.Uint64()))
-		fmt.Println("makelog - before")
 
 		interpreter.evm.StateDB.AddLog(&types.Log{
 			Address: scope.Contract.Address(),
@@ -1045,7 +954,6 @@ func makeLog(size int) executionFunc {
 			// core/state doesn't know the current block number.
 			BlockNumber: interpreter.evm.Context.BlockNumber.Uint64(),
 		})
-		fmt.Println("makelog - after")
 
 		return nil, nil
 	}
@@ -1053,7 +961,6 @@ func makeLog(size int) executionFunc {
 
 // opPush1 is a specialized version of pushN
 func opPush1(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext, activateSnapshotting bool) ([]byte, error) {
-	fmt.Println("opPush1 - called")
 	var (
 		codeLen = uint64(len(scope.Contract.Code))
 		integer = new(uint256.Int)
