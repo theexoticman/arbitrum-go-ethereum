@@ -362,9 +362,10 @@ func formatLogfmtValue(value interface{}, term bool) string {
 		return formatLogfmtUint256(v)
 	}
 	if term {
-		if s, ok := value.(TerminalStringer); ok {
+		if s, ok := value.(TerminalStringer); ok && s != nil {
 			// Custom terminal stringer provided, use that
-			return escapeString(s.TerminalString())
+			// return escapeString(s.TerminalString())
+			return "EMPTY FOR NOW"
 		}
 	}
 	value = formatShared(value)
