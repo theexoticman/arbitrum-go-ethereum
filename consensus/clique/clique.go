@@ -156,6 +156,8 @@ func ecrecover(header *types.Header, sigcache *sigLRU) (common.Address, error) {
 	}
 	signature := header.Extra[len(header.Extra)-extraSeal:]
 
+	// signer, _ := Uint8ArrayToAddress(header.Extra[32:52])
+
 	// Recover the public key and the Ethereum address
 	pubkey, err := crypto.Ecrecover(SealHash(header).Bytes(), signature)
 	if err != nil {
@@ -166,6 +168,15 @@ func ecrecover(header *types.Header, sigcache *sigLRU) (common.Address, error) {
 
 	sigcache.Add(hash, signer)
 	return signer, nil
+}
+
+func Uint8ArrayToAddress(bytes []uint8) (common.Address, error) {
+	if len(bytes) != 20 {
+		return common.Address{}, fmt.Errorf("input must be exactly 20 bytes long")
+	}
+	var addr common.Address
+	copy(addr[:], bytes[:20])
+	return addr, nil
 }
 
 // Clique is the proof-of-authority consensus engine proposed to support the
