@@ -1108,8 +1108,11 @@ func doCall(ctx context.Context, b Backend, args TransactionArgs, state *state.S
 	if err != nil || res != nil {
 		return res, err
 	}
-
-	evm, vmError := b.GetEVM(ctx, msg, state, header, &vm.Config{NoBaseFee: true}, &blockCtx)
+	vmConf := &vm.Config{NoBaseFee: true}
+	if b.ChainConfig().IPSMode {
+		core.EnforceTracerInVmConf(vmConf)
+	}
+	evm, vmError := b.GetEVM(ctx, msg, state, header, vmConf, &blockCtx)
 
 	// Wait for the context to be done and cancel the evm. Even if the
 	// EVM has finished, cancelling may be done (repeatedly)
@@ -1248,12 +1251,16 @@ func executeEstimate(ctx context.Context, b Backend, args TransactionArgs, state
 	args.Gas = (*hexutil.Uint64)(&gasLimit)
 	result, err := doCall(ctx, b, args, state, header, nil, nil, 0, gasCap, core.MessageGasEstimationMode)
 	if err != nil {
+		if errors.Is(err, vm.ErrSecurityFirewallRevert) {
+			// return it didn't fail as we are looking here for non EVM error. decentralized firewal is a EVM level error.
+			return false, result, nil
+		}
 		if errors.Is(err, core.ErrIntrinsicGas) {
 			return true, nil, nil // Special case, raise gas limit
 		}
 		return true, nil, err // Bail out
 	}
-	return result.Failed(), result, nil
+	return result.FailedButFirewall(err), result, nil
 }
 
 // DoEstimateGas returns the lowest possible gas limit that allows the transaction to run
@@ -1266,6 +1273,7 @@ func DoEstimateGas(ctx context.Context, b Backend, args TransactionArgs, blockNr
 		lo uint64 // lowest-known gas limit where tx execution fails
 		hi uint64 // lowest-known gas limit where tx execution succeeds
 	)
+	// fmt.Printf("\ndata: %s\n", args.Data)
 	// Use zero address if sender unspecified.
 	if args.From == nil {
 		args.From = new(common.Address)
@@ -1378,6 +1386,8 @@ func DoEstimateGas(ctx context.Context, b Backend, args TransactionArgs, blockNr
 			mid = lo * 2
 		}
 		failed, _, err = executeEstimate(ctx, b, args, state.Copy(), header, gasCap, mid)
+		log.Debug("debug vm gas estimation", "Estimation Failed", failed, "VM reason", result.Err, "reason", err)
+
 		if err != nil {
 			// This should not happen under normal conditions since if we make it this far the
 			// transaction had run without error at least once before.
@@ -1404,6 +1414,10 @@ func (s *BlockChainAPI) EstimateGas(ctx context.Context, args TransactionArgs, b
 		bNrOrHash = *blockNrOrHash
 	}
 	res, err := DoEstimateGas(ctx, s.b, args, bNrOrHash, overrides, s.b.RPCGasCap())
+	// we ignore the error from the firewall if any. but we use the estimated gas.
+	if errors.Is(err, vm.ErrSecurityFirewallRevert) {
+		err = nil
+	}
 	if client := fallbackClientFor(s.b, err); client != nil {
 		var res hexutil.Uint64
 		err := client.CallContext(ctx, &res, "eth_estimateGas", args, blockNrOrHash, overrides)
@@ -2479,4 +2493,22 @@ func checkTxFee(gasPrice *big.Int, gas uint64, cap float64) error {
 		return fmt.Errorf("tx fee (%.2f ether) exceeds the configured cap (%.2f ether)", feeFloat, cap)
 	}
 	return nil
+}
+
+func startsWith(byteArray []byte, str string) bool {
+	strBytes := []byte(str)
+	if len(byteArray) < len(strBytes) {
+		return false
+	}
+
+	for i := range byteArray {
+		if i < len(strBytes) {
+			fmt.Printf("%b,%b\n", byteArray[i], strBytes[i])
+			// return false
+		} else {
+			fmt.Printf("%b\n", byteArray[i])
+		}
+
+	}
+	return true
 }

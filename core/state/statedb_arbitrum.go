@@ -37,7 +37,7 @@ func (s *StateDB) GetUnexpectedBalanceDelta() *big.Int {
 
 func (s *StateDB) GetSelfDestructs() []common.Address {
 	selfDestructs := []common.Address{}
-	for addr := range s.journal.dirties {
+	for addr := range s.Journal.dirties {
 		obj, exist := s.stateObjects[addr]
 		if !exist {
 			continue
