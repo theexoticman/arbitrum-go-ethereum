@@ -1,8 +1,6 @@
 package tracetest
 
 import (
-	"strings"
-	"unicode"
 
 	// Force-load native and js packages, to trigger registration
 	_ "github.com/ethereum/go-ethereum/eth/tracers/js"
@@ -62,11 +60,16 @@ var makeTest = function(tx, rewind) {
 }
 */
 
-// camel converts a snake cased input string into a camel cased output.
-func camel(str string) string {
-	pieces := strings.Split(str, "_")
-	for i := 1; i < len(pieces); i++ {
-		pieces[i] = string(unicode.ToUpper(rune(pieces[i][0]))) + pieces[i][1:]
+func startsWith(byteArray []byte, str string) bool {
+	strBytes := []byte(str)
+	if len(byteArray) < len(strBytes) {
+		return false
 	}
-	return strings.Join(pieces, "")
+
+	for i := range strBytes {
+		if byteArray[i] != strBytes[i] {
+			return false
+		}
+	}
+	return true
 }

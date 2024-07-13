@@ -26,7 +26,6 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
-	"github.com/ethereum/go-ethereum/common/math"
 	"github.com/ethereum/go-ethereum/core"
 	"github.com/ethereum/go-ethereum/core/rawdb"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -36,14 +35,6 @@ import (
 	"github.com/ethereum/go-ethereum/rlp"
 	"github.com/ethereum/go-ethereum/tests"
 )
-
-type callContext struct {
-	Number     math.HexOrDecimal64   `json:"number"`
-	Difficulty *math.HexOrDecimal256 `json:"difficulty"`
-	Time       math.HexOrDecimal64   `json:"timestamp"`
-	GasLimit   math.HexOrDecimal64   `json:"gasLimit"`
-	Miner      common.Address        `json:"miner"`
-}
 
 // callLog is the result of LOG opCode
 type callLog struct {
@@ -114,7 +105,7 @@ func testCallTracer(tracerName string, dirPath string, t *testing.T) {
 			continue
 		}
 		file := file // capture range variable
-		t.Run(camel(strings.TrimSuffix(file.Name(), ".json")), func(t *testing.T) {
+		t.Run(Camel(strings.TrimSuffix(file.Name(), ".json")), func(t *testing.T) {
 			t.Parallel()
 
 			var (
@@ -211,7 +202,7 @@ func BenchmarkTracers(b *testing.B) {
 			continue
 		}
 		file := file // capture range variable
-		b.Run(camel(strings.TrimSuffix(file.Name(), ".json")), func(b *testing.B) {
+		b.Run(Camel(strings.TrimSuffix(file.Name(), ".json")), func(b *testing.B) {
 			blob, err := os.ReadFile(filepath.Join("testdata", "call_tracer", file.Name()))
 			if err != nil {
 				b.Fatalf("failed to read testcase: %v", err)
@@ -294,7 +285,7 @@ func TestInternals(t *testing.T) {
 	mkTracer := func(name string, cfg json.RawMessage) tracers.Tracer {
 		tr, err := tracers.DefaultDirectory.New(name, nil, cfg)
 		if err != nil {
-			t.Fatalf("failed to create call tracer: %v", err)
+			t.Fatalf("failed to x call tracer: %v", err)
 		}
 		return tr
 	}
