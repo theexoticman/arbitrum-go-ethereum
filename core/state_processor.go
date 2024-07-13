@@ -17,8 +17,10 @@
 package core
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -27,6 +29,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/state"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/core/vm"
+
 	"github.com/ethereum/go-ethereum/params"
 )
 
@@ -70,11 +73,23 @@ func (p *StateProcessor) Process(block *types.Block, statedb *state.StateDB, cfg
 	if p.config.DAOForkSupport && p.config.DAOForkBlock != nil && p.config.DAOForkBlock.Cmp(block.Number()) == 0 {
 		misc.ApplyDAOHardFork(statedb)
 	}
+
 	var (
 		context = NewEVMBlockContext(header, p.bc, nil)
-		vmenv   = vm.NewEVM(context, vm.TxContext{}, statedb, p.config, cfg)
 		signer  = types.MakeSigner(p.config, header.Number, header.Time)
 	)
+
+	// TODO refactor this code. it is currently duplicated in Process and Apply transaction. but both use applytransaction underneath.
+	// Add the tracer and security checks for the processing of the blocks
+	if p.config.IPSMode {
+		err := EnforceTracerInVmConf(&cfg)
+		if err != nil {
+			log.Fatalf("Couldn't set IPS default Tracer in the EVM configuration : %s\n", err)
+		}
+	}
+	//create EVM with configuration
+	vmenv := vm.NewEVM(context, vm.TxContext{}, statedb, p.config, cfg)
+
 	if beaconRoot := block.BeaconRoot(); beaconRoot != nil {
 		ProcessBeaconBlockRoot(*beaconRoot, vmenv, statedb)
 	}
@@ -110,6 +125,11 @@ func applyTransaction(msg *Message, config *params.ChainConfig, gp *GasPool, sta
 
 	// Apply the transaction to the current state (included in the env).
 	result, err := ApplyMessage(evm, msg, gp)
+	if errors.Is(err, vm.ErrSecurityFirewallRevert) {
+		// unsetting VM error as the protocol error
+		//only to do for gas estimation
+		err = nil
+	}
 	if err != nil {
 		return nil, nil, err
 	}
@@ -165,20 +185,50 @@ func applyTransaction(msg *Message, config *params.ChainConfig, gp *GasPool, sta
 // and uses the input parameters for its environment. It returns the receipt
 // for the transaction, gas used and an error if the transaction failed,
 // indicating the block was invalid.
-func ApplyTransaction(config *params.ChainConfig, bc ChainContext, author *common.Address, gp *GasPool, statedb *state.StateDB, header *types.Header, tx *types.Transaction, usedGas *uint64, cfg vm.Config) (*types.Receipt, *ExecutionResult, error) {
-	return ApplyTransactionWithResultFilter(config, bc, author, gp, statedb, header, tx, usedGas, cfg, nil)
+func ApplyTransaction(config *params.ChainConfig, bc ChainContext, author *common.Address, gp *GasPool, statedb *state.StateDB, snapshotContractsDb *state.StateDB, header *types.Header, tx *types.Transaction, usedGas *uint64, cfg vm.Config) (*types.Receipt, *ExecutionResult, error) {
+	return ApplyTransactionWithResultFilter(config, bc, author, gp, statedb, snapshotContractsDb, header, tx, usedGas, cfg, nil)
 }
 
-func ApplyTransactionWithResultFilter(config *params.ChainConfig, bc ChainContext, author *common.Address, gp *GasPool, statedb *state.StateDB, header *types.Header, tx *types.Transaction, usedGas *uint64, cfg vm.Config, resultFilter func(*ExecutionResult) error) (*types.Receipt, *ExecutionResult, error) {
+func ApplyTransactionWithResultFilter(config *params.ChainConfig, bc ChainContext, author *common.Address, gp *GasPool, statedb *state.StateDB, snapshotContractsDb *state.StateDB, header *types.Header, tx *types.Transaction, usedGas *uint64, cfg vm.Config, resultFilter func(*ExecutionResult) error) (*types.Receipt, *ExecutionResult, error) {
 	msg, err := TransactionToMessage(tx, types.MakeSigner(config, header.Number, header.Time), header.BaseFee, MessageReplayMode)
 	if err != nil {
 		return nil, nil, err
 	}
 	// Create a new context to be used in the EVM environment
 	blockContext := NewEVMBlockContext(header, bc, author)
+
 	txContext := NewEVMTxContext(msg)
+
+	// TODO refactor this code. it is currently duplicated in Process and Apply transaction. but both use applytransaction underneath.
+	if config.IPSMode {
+		err := EnforceTracerInVmConf(&cfg)
+		if err != nil {
+			log.Fatalf("Couldn't set IPS default Tracer in the EVM configuration : %s\n", err)
+		}
+	}
 	vmenv := vm.NewEVM(blockContext, txContext, statedb, config, cfg)
 	return applyTransaction(msg, config, gp, statedb, header.Number, header.Hash(), tx, usedGas, vmenv, resultFilter)
+}
+func EnforceTracerInVmConf(cfg *vm.Config) error {
+	// add the diffmode config to the tracer
+	prestateConfig := ExecutionPrestateTracerConfig{
+		DiffMode: true,
+	}
+	// Creating tracer
+	jsonData, err := json.Marshal(prestateConfig)
+	if err != nil {
+		fmt.Println("Error marshalling to JSON:", err)
+	}
+
+	jsonConfig := json.RawMessage(jsonData)
+	tracer, err := newExecutionPrestateTracer(jsonConfig)
+	if err != nil {
+		fmt.Println("Failed creating th Execution Prestate Tracer:", err)
+	}
+	//adding tracer to the vm configuration
+	cfg.DynamicTracer = tracer
+
+	return nil
 }
 
 // ProcessBeaconBlockRoot applies the EIP-4788 system call to the beacon block root
@@ -197,6 +247,8 @@ func ProcessBeaconBlockRoot(beaconRoot common.Hash, vmenv *vm.EVM, statedb *stat
 	}
 	vmenv.Reset(NewEVMTxContext(msg), statedb)
 	statedb.AddAddressToAccessList(params.BeaconRootsStorageAddress)
-	_, _, _ = vmenv.Call(vm.AccountRef(msg.From), *msg.To, msg.Data, 30_000_000, common.U2560)
+
+	_, _, _ = vmenv.Call(vm.AccountRef(msg.From), *msg.To, msg.Data, 30_000_000, common.U2560, false)
+
 	statedb.Finalise(true)
 }

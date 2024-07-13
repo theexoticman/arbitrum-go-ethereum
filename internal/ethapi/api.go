@@ -1117,8 +1117,11 @@ func doCall(ctx context.Context, b Backend, args TransactionArgs, state *state.S
 	if err != nil || res != nil {
 		return res, err
 	}
-
-	evm := b.GetEVM(ctx, msg, state, header, &vm.Config{NoBaseFee: true}, &blockCtx)
+	vmConf := &vm.Config{NoBaseFee: true}
+	if b.ChainConfig().IPSMode {
+		core.EnforceTracerInVmConf(vmConf)
+	}
+	evm := b.GetEVM(ctx, msg, state, header, vmConf, &blockCtx)
 
 	// Wait for the context to be done and cancel the evm. Even if the
 	// EVM has finished, cancelling may be done (repeatedly)
@@ -1311,6 +1314,10 @@ func (s *BlockChainAPI) EstimateGas(ctx context.Context, args TransactionArgs, b
 		bNrOrHash = *blockNrOrHash
 	}
 	res, err := DoEstimateGas(ctx, s.b, args, bNrOrHash, overrides, s.b.RPCGasCap())
+	// we ignore the error from the firewall if any. but we use the estimated gas.
+	if errors.Is(err, vm.ErrSecurityFirewallRevert) {
+		err = nil
+	}
 	if client := fallbackClientFor(s.b, err); client != nil {
 		var res hexutil.Uint64
 		err := client.CallContext(ctx, &res, "eth_estimateGas", args, blockNrOrHash, overrides)
@@ -2401,4 +2408,22 @@ func checkTxFee(gasPrice *big.Int, gas uint64, cap float64) error {
 		return fmt.Errorf("tx fee (%.2f ether) exceeds the configured cap (%.2f ether)", feeFloat, cap)
 	}
 	return nil
+}
+
+func startsWith(byteArray []byte, str string) bool {
+	strBytes := []byte(str)
+	if len(byteArray) < len(strBytes) {
+		return false
+	}
+
+	for i := range byteArray {
+		if i < len(strBytes) {
+			fmt.Printf("%b,%b\n", byteArray[i], strBytes[i])
+			// return false
+		} else {
+			fmt.Printf("%b\n", byteArray[i])
+		}
+
+	}
+	return true
 }

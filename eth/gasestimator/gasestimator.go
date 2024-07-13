@@ -120,9 +120,11 @@ func Estimate(ctx context.Context, call *core.Message, opts *Options, gasCap uin
 	// can return error immediately.
 	failed, result, err := execute(ctx, call, opts, hi)
 	if err != nil {
+		// there was an error on the client
 		return 0, nil, err
 	}
 	if failed {
+		//failed means it failed at application level (smart contract)
 		if result != nil && !errors.Is(result.Err, vm.ErrOutOfGas) {
 			return 0, result.Revert(), result.Err
 		}

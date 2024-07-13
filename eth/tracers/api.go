@@ -282,7 +282,7 @@ func (api *API) traceChain(start, end *types.Block, config *TraceConfig, closed 
 						TxHash:      tx.Hash(),
 					}
 					res, err := api.traceTx(ctx, msg, txctx, blockCtx, task.statedb, config)
-					if err != nil {
+					if err != nil && !errors.Is(err, vm.ErrSecurityFirewallRevert) {
 						task.results[i] = &txTraceResult{TxHash: tx.Hash(), Error: err.Error()}
 						log.Warn("Tracing failed", "hash", tx.Hash(), "block", task.block.NumberU64(), "err", err)
 						break
@@ -685,6 +685,7 @@ txloop:
 		// Generate the next state snapshot fast without tracing
 		msg, _ := core.TransactionToMessage(tx, signer, block.BaseFee(), core.MessageReplayMode)
 		statedb.SetTxContext(tx.Hash(), i)
+
 		vmenv := vm.NewEVM(blockCtx, core.NewEVMTxContext(msg), statedb, api.backend.ChainConfig(), vm.Config{})
 		if _, err := core.ApplyMessage(vmenv, msg, new(core.GasPool).AddGas(msg.GasLimit)); err != nil {
 			failed = err
@@ -956,8 +957,25 @@ func (api *API) traceTx(ctx context.Context, message *core.Message, txctx *Conte
 			return nil, err
 		}
 	}
+
 	vmenv := vm.NewEVM(vmctx, txContext, statedb, api.backend.ChainConfig(), vm.Config{Tracer: tracer, NoBaseFee: true})
 
+	//TODO centralize next line by creating a command line.
+	// add the diffmode config to the tracer
+	prestateConfig := core.ExecutionPrestateTracerConfig{
+		DiffMode: true,
+	}
+	// Creating tracer
+	jsonData, err := json.Marshal(prestateConfig)
+	if err != nil {
+		fmt.Println("Error marshalling to JSON:", err)
+	}
+
+	jsonConfig := json.RawMessage(jsonData)
+	vmenv.Config.DynamicTracer, err = core.NewExecutionPrestateTracer(jsonConfig)
+	if err != nil {
+		fmt.Println("Failed creating th Execution Prestate Tracer:", err)
+	}
 	// Define a meaningful timeout of a single transaction trace
 	if config.Timeout != nil {
 		if timeout, err = time.ParseDuration(*config.Timeout); err != nil {
@@ -977,7 +995,8 @@ func (api *API) traceTx(ctx context.Context, message *core.Message, txctx *Conte
 
 	// Call Prepare to clear out the statedb access list
 	statedb.SetTxContext(txctx.TxHash, txctx.TxIndex)
-	if _, err = core.ApplyMessage(vmenv, message, new(core.GasPool).AddGas(message.GasLimit)); err != nil {
+	_, err = core.ApplyMessage(vmenv, message, new(core.GasPool).AddGas(message.GasLimit))
+	if err != nil && !errors.Is(err, vm.ErrSecurityFirewallRevert) {
 		return nil, fmt.Errorf("tracing failed: %w", err)
 	}
 	return tracer.GetResult()

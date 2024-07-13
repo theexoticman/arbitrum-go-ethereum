@@ -172,7 +172,7 @@ func CreateConsensusEngine(config *params.ChainConfig, db ethdb.Database) (conse
 	// If defaulting to proof-of-work, enforce an already merged network since
 	// we cannot run PoW algorithms anymore, so we cannot even follow a chain
 	// not coordinated by a beacon node.
-	if !config.TerminalTotalDifficultyPassed {
+	if !config.TerminalTotalDifficultyPassed && !config.IsDevMode {
 		return nil, errors.New("ethash is only supported as a historical component of already merged networks")
 	}
 	return beacon.New(ethash.NewFaker()), nil

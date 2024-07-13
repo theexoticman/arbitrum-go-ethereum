@@ -163,6 +163,7 @@ func testBlockChainImport(chain types.Blocks, blockchain *BlockChain) error {
 		if err != nil {
 			return err
 		}
+
 		receipts, _, usedGas, err := blockchain.processor.Process(block, statedb, vm.Config{})
 		if err != nil {
 			blockchain.reportBlock(block, receipts, err)
@@ -955,6 +956,35 @@ func testFastVsFullChains(t *testing.T, scheme string) {
 			t.Errorf("block #%d: canonical hash mismatch: ancientdb %v, archivedb %v", i, anhash, arhash)
 		}
 	}
+}
+func TestIPSChain(t *testing.T) {
+	testIPSChain(t, rawdb.HashScheme)
+	testIPSChain(t, rawdb.PathScheme)
+}
+
+func testIPSChain(t *testing.T, scheme string) {
+	// Configure and generate a sample block chain
+	// var (
+	// key, _  = crypto.HexToECDSA("b71c71a67e1177ad4e901695e1b4b9ee17ae16c6668d313eac2f96dbcda3f291")
+	// address = crypto.PubkeyToAddress(key.PublicKey)
+	// funds   = big.NewInt(1000000000000000)
+	// gspec   = &Genesis{
+	// Config:  params.IPSChainConfig,
+	// Alloc:   GenesisAlloc{address: {Balance: funds}},
+	// BaseFee: big.NewInt(params.InitialBaseFee),
+	// }
+	// signer = types.LatestSigner(gspec.Config)
+	// )
+	// _, blocks, receipts := GenerateChainWithGenesis(gspec, ethash.NewFaker(), 1024, func(i int, block *BlockGen) {
+	// block.SetCoinbase(common.Address{0x00})
+	// create a security contract
+	// create a regular contract
+	// assign the security contract to the regular contract.
+
+	// If the block number is multiple of 3, send a few bonus transactions to the miner
+
+	// })
+
 }
 
 // Tests that various import methods move the chain head pointers to the correct

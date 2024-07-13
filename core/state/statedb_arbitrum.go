@@ -85,7 +85,7 @@ func (s *StateDB) ActivateWasm(moduleHash common.Hash, asm, module []byte) {
 		Asm:    asm,
 		Module: module,
 	}
-	s.journal.append(wasmActivation{
+	s.Journal.append(wasmActivation{
 		moduleHash: moduleHash,
 	})
 }
@@ -171,7 +171,7 @@ func (s *StateDB) GetUnexpectedBalanceDelta() *big.Int {
 
 func (s *StateDB) GetSelfDestructs() []common.Address {
 	selfDestructs := []common.Address{}
-	for addr := range s.journal.dirties {
+	for addr := range s.Journal.dirties {
 		obj, exist := s.stateObjects[addr]
 		if !exist {
 			continue
@@ -251,11 +251,11 @@ func (s *StateDB) UserWasms() UserWasms {
 }
 
 func (s *StateDB) RecordCacheWasm(wasm CacheWasm) {
-	s.journal.entries = append(s.journal.entries, wasm)
+	s.Journal.entries = append(s.Journal.entries, wasm)
 }
 
 func (s *StateDB) RecordEvictWasm(wasm EvictWasm) {
-	s.journal.entries = append(s.journal.entries, wasm)
+	s.Journal.entries = append(s.Journal.entries, wasm)
 }
 
 func (s *StateDB) GetRecentWasms() RecentWasms {

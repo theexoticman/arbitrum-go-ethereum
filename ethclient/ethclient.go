@@ -98,6 +98,7 @@ func (ec *Client) BlockByNumber(ctx context.Context, number *big.Int) (*types.Bl
 func (ec *Client) BlockNumber(ctx context.Context) (uint64, error) {
 	var result hexutil.Uint64
 	err := ec.c.CallContext(ctx, &result, "eth_blockNumber")
+	fmt.Printf("Blocknumber: %d", hexutil.Uint64(result))
 	return uint64(result), err
 }
 
