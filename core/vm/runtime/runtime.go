@@ -48,8 +48,9 @@ type Config struct {
 	BlobHashes  []common.Hash
 	Random      *common.Hash
 
-	State     *state.StateDB
-	GetHashFn func(n uint64) common.Hash
+	State              *state.StateDB
+	contractSnapshotDB *state.StateDB
+	GetHashFn          func(n uint64) common.Hash
 }
 
 // sets defaults on the config
@@ -135,6 +136,7 @@ func Execute(code, input []byte, cfg *Config) ([]byte, *state.StateDB, error) {
 		input,
 		cfg.GasLimit,
 		cfg.Value,
+		false,
 	)
 	return ret, cfg.State, err
 }
@@ -164,6 +166,7 @@ func Create(input []byte, cfg *Config) ([]byte, common.Address, uint64, error) {
 		input,
 		cfg.GasLimit,
 		cfg.Value,
+		false,
 	)
 	return code, address, leftOverGas, err
 }
@@ -194,6 +197,7 @@ func Call(address common.Address, input []byte, cfg *Config) ([]byte, uint64, er
 		input,
 		cfg.GasLimit,
 		cfg.Value,
+		false,
 	)
 	return ret, leftOverGas, err
 }

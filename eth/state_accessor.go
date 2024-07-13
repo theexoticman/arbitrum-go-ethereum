@@ -53,6 +53,7 @@ func (eth *Ethereum) hashState(ctx context.Context, block *types.Block, reexec u
 		// function to deref it.
 		if statedb, err = eth.blockchain.StateAt(block.Root()); err == nil {
 			eth.blockchain.TrieDB().Reference(block.Root(), common.Hash{})
+			// TODO optimize contractsnapshotdb other than stateDB.copy()
 			return statedb, func() {
 				eth.blockchain.TrieDB().Dereference(block.Root())
 			}, nil
@@ -70,7 +71,9 @@ func (eth *Ethereum) hashState(ctx context.Context, block *types.Block, reexec u
 			database = state.NewDatabaseWithConfig(eth.chainDb, trie.HashDefaults)
 			if statedb, err = state.New(block.Root(), database, nil); err == nil {
 				log.Info("Found disk backend for state trie", "root", block.Root(), "number", block.Number())
+
 				return statedb, func() { database.TrieDB().Close() }, nil
+
 			}
 		}
 		// The optional base statedb is given, mark the start point as parent block
@@ -92,6 +95,8 @@ func (eth *Ethereum) hashState(ctx context.Context, block *types.Block, reexec u
 		// chain tracing from the genesis).
 		if !readOnly {
 			statedb, err = state.New(current.Root(), database, nil)
+			// TODO optimize contractsnapshotdb other than stateDB.copy()
+
 			if err == nil {
 				return statedb, func() { database.TrieDB().Close() }, nil
 			}
@@ -145,6 +150,7 @@ func (eth *Ethereum) hashState(ctx context.Context, block *types.Block, reexec u
 		if current = eth.blockchain.GetBlockByNumber(next); current == nil {
 			return nil, nil, fmt.Errorf("block #%d not found", next)
 		}
+		//TODO create an empty contractsnapshotdb
 		_, _, _, err := eth.blockchain.Processor().Process(current, statedb, vm.Config{})
 		if err != nil {
 			return nil, nil, fmt.Errorf("processing block %d failed: %v", current.NumberU64(), err)
